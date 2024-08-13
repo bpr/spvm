@@ -74,14 +74,14 @@ struct TransactionContent {
     nonce: u32,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone,  PartialEq, Eq, Debug)]
 struct MintTransactionParams {
     token_ticker: String,
     owner: Address,
     supply: u16,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone,  PartialEq, Eq, Debug)]
 struct TransferTransactionParams {
     token_ticker: String,
     to: Address,
@@ -133,7 +133,7 @@ impl SPVM {
 
     pub fn set_balance(&mut self, token_ticker: String, holder_address: Address, balance: u16) {
         self.initialized_tickers.insert(token_ticker.clone(), true);
-        let nested_map = self.state.get_mut(&token_ticker).unwrap();
+        let nested_map = self.state.entry(token_ticker.clone()).or_default();
         nested_map.insert(holder_address, balance);
     }
 
@@ -285,16 +285,27 @@ mod tests {
 
     #[test]
     fn set_and_get_balance() {
-        assert!(true);
+        let mut spvm = SPVM::new();
+        let token_ticker = "ABC".to_string();
+        let holder_address = Address([1; 20]);
+        let balance = 100;
+        spvm.set_balance(token_ticker.clone(), holder_address.clone(), balance);
+        assert_eq!(spvm.get_balance(token_ticker.clone(), holder_address.clone()), balance);
     }
 
     #[test]
     fn validate_signature() {
-        assert!(true);
+        // Rather useless now, always returns true
+        let spvm = SPVM::new();
+        let message_hash = Bytes32([1; 32]);
+        let signature = vec![1, 2, 3];
+        let expected_signer = Address([1; 20]);
+        assert!(spvm.validate_signature(message_hash, signature, expected_signer));
     }
 
     #[test]
     fn execute_transaction() {
+        let mut _spvm = SPVM::new();
         assert!(true);
     }
 }
